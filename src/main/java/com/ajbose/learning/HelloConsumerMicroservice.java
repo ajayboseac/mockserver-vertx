@@ -1,5 +1,6 @@
 package com.ajbose.learning;
 
+import io.vertx.core.impl.StringEscapeUtils;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rxjava.core.AbstractVerticle;
@@ -17,7 +18,7 @@ import  com.ajbose.learning.model.EndPoint;
 
 public class HelloConsumerMicroservice extends AbstractVerticle {
 
-    Map endPointRepository = new HashMap<String, EndPoint>();
+    Map<String, EndPoint> endPointRepository = new HashMap<String, EndPoint>();
 
     @Override
     public void start() {
@@ -34,7 +35,14 @@ public class HelloConsumerMicroservice extends AbstractVerticle {
     private void handleMockCall(RoutingContext routingContext) {
         System.out.println("URI "+routingContext.request().absoluteURI());
         System.out.println("URI "+routingContext.request().path());
-        routingContext.response().end(Json.encode(endPointRepository.get(routingContext.request().path())));
+        EndPoint endPoint = endPointRepository.get(routingContext.request().path());
+        String response = endPoint.getResponse();
+        try {
+            System.out.println("UnEscaped String: "+StringEscapeUtils.unescapeJava(response));
+            routingContext.response().end(StringEscapeUtils.unescapeJava(response));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void getAllEndPoints(RoutingContext rc){
